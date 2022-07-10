@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<title>Files</title>
-	<link rel="icon" type="image/png" href="favicon.png"/>
+	<link rel="icon" type="image/png" href="favicon.png">
 	<link rel="stylesheet" href="css/all.min.css">
 	<!-- <link rel="stylesheet" href="fontello/css/fontello.min.css"> -->
 	<link rel="stylesheet" href="css/style.css">
@@ -60,7 +60,7 @@
 					}
 				}
 			} else {
-				echo 'Błąd skanowania folderu';
+				echo 'Failed to scan directory';
 			}
 		?>
 		</div>
