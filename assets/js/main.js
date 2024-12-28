@@ -1,135 +1,131 @@
-var $doc = $(document);
-var $input_file, $upload_btn, $cancel_btn, $progress;
-var $progress_bar_container, $upload_response_container;
+var inputFile,
+    uploadButton,
+    cancelButton,
+    progress,
+    progressBarContainer,
+    uploadResponseContainer;
 
-function uploadImage($form) {
-	var form = $form[0];
-
+function uploadImage(form) {
 	var files = form[0].files;
-	var flen = files.length;
 
-  if (flen == 0) {
+  if (files.length == 0) {
     return;
   }
 
-	var info_container = $upload_response_container.find('.upload-response');
+	var messageContainer = uploadResponseContainer.querySelector('.upload-response');
 
-	var formdata = new FormData(form); //formelement
+	var formdata = new FormData(form);
 
-	for (var i = 0; i < flen; ++i) {
-		formdata.append('files[]', files[i]);
+	for (const file of files) {
+		formdata.append('files[]', file);
 	}
 
-  $progress_bar_container.removeClass('hidden');
-  $upload_response_container.removeClass('hidden');
+  progressBarContainer.classList.remove('hidden');
+  uploadResponseContainer.classList.remove('hidden');
 
 	var request = new XMLHttpRequest();
 
-	//progress event...
 	request.upload.addEventListener('progress', function (e) {
 		var percent = Math.round(e.loaded / e.total * 100);
-		$progress.width(percent + '%');
-		info_container.html(percent + '%');
+		progress.style.width = percent + '%';
+		messageContainer.innerHTML = percent + '%';
 	});
 
-	//progress completed load event
 	request.addEventListener('load', function (e) {
     let target = e.target;
-    let res;
+    let response;
     let success = true;
-    let failures_count = 0;
+    let failuresAmount = 0;
 
     try {
-      res = JSON.parse(target.response);
-		  console.log(res);
+      response = JSON.parse(target.response);
+		  console.log(response);
     } catch (e) {}
 
     if (target.status === 200) {
-      if (! Array.isArray(res)) {
-        info_container.html('Invalid server response');
+      if (! Array.isArray(response)) {
+        messageContainer.textContent = 'Invalid server response';
         return;
       }
 
-      res.forEach(function (item) {
+      response.forEach(function (item) {
         if (! item.status) {
           success = false;
-          failures_count++;
+          failuresAmount++;
         }
       });
 
       if (success) {
-        info_container.html('Upload completed');
+        messageContainer.textContent = 'Upload completed';
       } else {
-        if (flen == failures_count) {
-          info_container.html('Upload failure (all files weren\'t uploaded)');
+        if (flen == failuresAmount) {
+          messageContainer.textContent ='Upload failure (all files weren\'t uploaded)';
         } else {
-          info_container.html('Upload completed (' + failures_count + ' files weren\'t uploaded)');
+          messageContainer.textContent ='Upload completed (' + failuresAmount + ' files weren\'t uploaded)';
         }
       }
     } else {
-      info_container.html('Upload error (' + target.status + ' ' + target.statusText + ')');
+      messageContainer.textContent ='Upload error (' + target.status + ' ' + target.statusText + ')';
     }
 	});
 
 	//progress completed load event
-	request.addEventListener('error', function (e) {
-		info_container.html('Upload error');
+	request.addEventListener('error', function () {
+		messageContainer.textContent = 'Upload error';
 	});
 
-  request.addEventListener('loadend', function (e) {
-    $cancel_btn.off('click');
-    $cancel_btn.addClass('hidden');
+  request.addEventListener('loadend', function () {
+    cancelButton.classList.add('hidden');
 
-    $cancel_btn.prop('disabled', true);
-    $upload_btn.prop('disabled', false);
+    cancelButton.disabled = true;
+    uploadButton.disabled = false;
 
-    $progress_bar_container.addClass('hidden');
+    progressBarContainer.classList.add('hidden');
   });
 
   // request.addEventListener('readystatechange', function (e) {
   //   if (e.target.readyState === 4) {
-  //     $cancel_btn.off('click');
-  //     $cancel_btn.addClass('hidden');
+  //     cancelButton.off('click');
+  //     cancelButton.addClass('hidden');
 
-  //     $cancel_btn.prop('disabled', true);
-  //     $upload_btn.prop('disabled', false);
+  //     cancelButton.prop('disabled', true);
+  //     uploadButton.prop('disabled', false);
 
-  //     $progress_bar_container.addClass('hidden');
+  //     progressBarContainer.addClass('hidden');
   //   }
   // });
 
-  $cancel_btn.prop('disabled', false);
-  $cancel_btn.removeClass('hidden');
-	$upload_btn.prop('disabled', true);
+  cancelButton.disabled = false;
+  cancelButton.classList.remove('hidden');
+	uploadButton.disabled = true;
 
 	request.open('post', 'upload.php');
 	request.send(formdata);
 
-	$cancel_btn.on('click', function () {
+	cancelButton.addEventListener('click', function () {
 		request.abort();
-    $progress.width(0);
-		info_container.html('Upload aborted');
+    progress.style.width = 0;
+		messageContainer.textContent = 'Upload aborted';
 	});
 }
 
-// window.addEventListener('DOMContentLoaded', init, false);
+document.addEventListener('DOMContentLoaded', function () {
+  inputFile = document.querySelector('input[type="file"]');
+  uploadButton = document.querySelector('.btn.upload');
+  cancelButton = document.querySelector('.btn.cancel');
+  progress = document.querySelector('.progress');
+  progressBarContainer = document.querySelector('.progress-bar-container');
+  uploadResponseContainer = document.querySelector('.upload-response-container');
 
-$doc.ready(function () {
-  $input_file = $('input[type="file"]').eq(0);
-  $upload_btn = $('.btn.upload');
-  $cancel_btn = $('.btn.cancel');
-  $progress = $('.progress');
-  $progress_bar_container = $('.progress-bar-container');
-  $upload_response_container = $('.upload-response-container');
+  inputFile.addEventListener('change', function () {
+    uploadButton.disabled = this.files == 0;
+    progress.style.width = 0;
+  }, false);
+}, false);
 
-  $input_file.on('change', function () {
-    $upload_btn.prop('disabled', this.files == 0);
-    $progress.width(0);
-  });
-});
-
-$doc.on('submit', '.upload-form', function (e) {
-	e.preventDefault();
-
-	uploadImage($(this));
-});
+document.addEventListener('submit', function (e) {
+  if (e.target.matches('.upload-form')) {
+    e.preventDefault();
+    uploadImage(e.target);
+  }
+}, false);

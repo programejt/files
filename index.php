@@ -7,14 +7,14 @@
 	<link rel="stylesheet" href="assets/css/all.min.css">
 	<!-- <link rel="stylesheet" href="fontello/css/fontello.min.css"> -->
 	<link rel="stylesheet" href="assets/css/style.css">
-	<script src="assets/js/jquery.min.js"></script>
+
 	<script src="assets/js/inputfile.js"></script>
 	<script src="assets/js/main.js"></script>
 </head>
 <body>
 	<div class="container">
 		<h1 class="section-title">Upload</h1>
-		<form action="#" method="post" class="upload-form">
+		<form action="" method="post" class="upload-form" enctype="multipart/form-data">
 			<div class="form-section">
 				<div class="input-file-container long">
 					<label class="label-with-input">
@@ -47,10 +47,10 @@
 
 			if ($scan) {
 				foreach ($scan as $filename) {
-					$file_path = $dirname.'/'.$filename;
+					$filePath = $dirname.'/'.$filename;
 
-					if (is_file($file_path)) {
-						echo '<a href="'.$file_path.'" class="download-link" download><!--- <i class="icon fa fa-arrow-alt-circle-down"></i> --><span>'.$filename.'</span></a>';
+					if (is_file($filePath)) {
+						echo '<a href="'.$filePath.'" class="download-link" download><!--- <i class="icon fa fa-arrow-alt-circle-down"></i> --><span>'.$filename.'</span></a>';
 					}
 				}
 			} else {
