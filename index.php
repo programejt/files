@@ -54,7 +54,7 @@
 					}
 				}
 			} else {
-				echo 'Błąd skanowania folderu';
+				echo 'Scanning folder failed';
 			}
 		?>
 		</div>

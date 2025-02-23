@@ -6,9 +6,10 @@ var inputFile,
     uploadResponseContainer;
 
 function uploadImage(form) {
-	var files = form[0].files;
+	var files = form[0].files,
+      filesAmount = files.length;
 
-  if (files.length == 0) {
+  if (filesAmount == 0) {
     return;
   }
 
@@ -49,7 +50,7 @@ function uploadImage(form) {
       }
 
       response.forEach(function (item) {
-        if (! item.status) {
+        if (! item.success) {
           success = false;
           failuresAmount++;
         }
@@ -58,7 +59,7 @@ function uploadImage(form) {
       if (success) {
         messageContainer.textContent = 'Upload completed';
       } else {
-        if (flen == failuresAmount) {
+        if (filesAmount == failuresAmount) {
           messageContainer.textContent ='Upload failure (all files weren\'t uploaded)';
         } else {
           messageContainer.textContent ='Upload completed (' + failuresAmount + ' files weren\'t uploaded)';

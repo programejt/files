@@ -10,14 +10,15 @@
       $filesAmount = count($files['name']);
 
       for ($i = 0; $i < $filesAmount; ++$i) {
-        $status = move_uploaded_file(
+        $result = move_uploaded_file(
           $files['tmp_name'][$i],
-          'upload/'.$files['name'][$i]
+          'upload/'.$files['name'][$i],
         );
 
         $response[] = [
-          'file'   => $files['name'][$i],
-          'status' => $status
+          'file'    => $files['name'][$i],
+          'error'   => $files['error'][$i],
+          'success' => $result,
         ];
       }
     }
@@ -27,3 +28,4 @@
 
   echo json_encode($response);
 ?>
+
