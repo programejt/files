@@ -11,7 +11,7 @@ function setupInputFile(input) {
 	if (filesAmount > 0) {
 		for (const file of files) {
 			let li = document.createElement('li');
-			li.className = 'file';
+			li.className = 'dropdown-item file';
 			li.textContent = file.name;
 			filesListContainer.appendChild(li);
 		}
@@ -32,48 +32,14 @@ function inputFileOnChange(e) {
 	setupInputFile(e.target);
 }
 
-function toggleInputactiveDropdowns(e) {
-	var target = e.target;
-	var button = target.closest('.toggle-selected-files-dropdown');
-	var activeDropdown = null;
-
-	if (button) {
-		activeDropdown = button.nextElementSibling;
-		activeDropdown.classList.toggle('visible');
-	} else {
-		var tmp = target.closest('.files-list');
-		if (tmp) {
-			activeDropdown = tmp;
-		}
-	}
-
-  let allDropdowns = document.querySelectorAll('.files-list');
-
-  for (const dropdown of allDropdowns) {
-    if (dropdown != activeDropdown) {
-      dropdown.classList.remove('visible')
-    }
-  }
-}
-
-function initInputFile() {
-	setupAllInputFile();
-}
-
 document.addEventListener(
   'DOMContentLoaded',
-  initInputFile,
+  setupAllInputFile,
   false
 );
 
 document.addEventListener(
   'change',
   inputFileOnChange,
-  false
-);
-
-document.addEventListener(
-  'click',
-  toggleInputactiveDropdowns,
   false
 );

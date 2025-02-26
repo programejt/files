@@ -1,31 +1,66 @@
 <?php
-  require 'config.php';
 
-  $response = [];
+require 'config.php';
 
-  if (isset($_FILES['files'])) {
-    $files = &$_FILES['files'];
+const HTTP_BAD_REQUEST = 400;
 
-    if (is_array($files['name'])) {
-      $filesAmount = count($files['name']);
+if (!isset($_FILES['files'])) {
+  http_response_code(HTTP_BAD_REQUEST);
+  exit;
+}
 
-      for ($i = 0; $i < $filesAmount; ++$i) {
-        $result = move_uploaded_file(
-          $files['tmp_name'][$i],
-          'upload/'.$files['name'][$i],
-        );
+$files      = &$_FILES['files'];
+$filesNames = &$files['name'];
 
-        $response[] = [
-          'file'    => $files['name'][$i],
-          'error'   => $files['error'][$i],
-          'success' => $result,
-        ];
-      }
+if (!(is_array($filesNames) && count($filesNames))) {
+  http_response_code(HTTP_BAD_REQUEST);
+  exit;
+}
+
+const HTTP_UNPROCESSABLE_ENTITY = 422;
+
+$response     = [];
+$responseCode = 200;
+
+foreach ($filesNames as $i => $fileName) {
+  $errorCode = $files['error'][$i];
+  $message   = match ($errorCode) {
+    UPLOAD_ERR_OK         => 'Success',
+    UPLOAD_ERR_INI_SIZE,
+    UPLOAD_ERR_FORM_SIZE  => 'The uploaded file size exceeds allowed max size ('.round($files['size'][$i] / 1024 / 1024 / 1024, 2).'GB / '.UPLOAD_MAX_FILESIZE.'B)',
+    UPLOAD_ERR_PARTIAL    => 'The uploaded file was only partially uploaded',
+    UPLOAD_ERR_NO_FILE    => 'No file was uploaded',
+    UPLOAD_ERR_NO_TMP_DIR => 'Missing a temporary folder',
+    UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
+    UPLOAD_ERR_EXTENSION  => 'Server stopped file upload because of internal error',
+  };
+
+  if ($errorCode === UPLOAD_ERR_OK) {
+    $success = move_uploaded_file(
+      $files['tmp_name'][$i],
+      UPLOAD_DIR.'/'.$fileName,
+    );
+
+    if (!$success) {
+      $errorCode    = 100;
+      $responseCode = HTTP_UNPROCESSABLE_ENTITY;
+      $message      = 'File was not uploaded because of internal error';
     }
+  } else {
+    $success      = false;
+    $responseCode = HTTP_UNPROCESSABLE_ENTITY;
   }
 
-  header('Content-Type: application/json; charset=utf-8');
+  $response[] = [
+    'file'      => $fileName,
+    'message'   => $message,
+    'errorCode' => $errorCode,
+    'success'   => $success,
+  ];
+}
 
-  echo json_encode($response);
-?>
+header('Content-Type: application/json; charset=utf-8');
 
+http_response_code($responseCode);
+
+echo json_encode($response);
